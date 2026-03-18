@@ -1,36 +1,24 @@
-// src/repositories/user.repository.ts
-import { User } from "../models/user.model";
+import { User, IUser } from "../models/user.model";
 
 export class UserRepository {
-  async getAllUsers() {
-    return User.findAll();
+  async getAll(): Promise<IUser[]> {
+    return User.find();
   }
 
-  async createUser(data: { name: string; email: string; age?: number }) {
-    return User.create(data);
+  async getById(id: string): Promise<IUser | null> {
+    return User.findById(id);
   }
 
-  async getUserById(id: number) {
-    return User.findByPk(id);
+  async create(data: { name: string; email: string }): Promise<IUser> {
+    const user = new User(data);
+    return user.save();
   }
 
-  async updateUser(
-    id: number,
-    data: { name?: string; email?: string; age?: number },
-  ) {
-    const user = await User.findByPk(id);
-    if (!user) return null;
-
-    if (data.name !== undefined) user.name = data.name;
-    if (data.email !== undefined) user.email = data.email;
-    if (data.age !== undefined) user.age = data.age;
-
-    await user.save();
-    return user;
+  async update(id: string, data: Partial<IUser>): Promise<IUser | null> {
+    return User.findByIdAndUpdate(id, data, { new: true });
   }
 
-  async deleteUser(id: number) {
-    const deleted = await User.destroy({ where: { id } });
-    return deleted > 0;
+  async delete(id: string): Promise<IUser | null> {
+    return User.findByIdAndDelete(id);
   }
 }

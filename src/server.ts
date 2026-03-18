@@ -1,34 +1,41 @@
 // src/server.ts
-import express from "express";
-import dotenv from "dotenv";
-import bodyParser from "body-parser";
-import { sequelize } from "./config/database";
-import userRoutes from "./api/user.api";
+import app from "./app";
+import mongoose from "mongoose";
+import { config } from "./config/config";
 
-dotenv.config();
-
-const app = express();
-const PORT = process.env.PORT || 8080;
-
-app.use(bodyParser.json());
-
-app.use("/users", userRoutes);
-
-app.get("/", (req, res) => {
-  res.send("Welcome to the Hospital Users API!");
-});
-
-(async () => {
+const startServer = async () => {
   try {
-    await sequelize.authenticate();
-    console.log("Database connected successfully.");
-    await sequelize.sync({ alter: true });
-    console.log("Models synchronized with database.");
-  } catch (err) {
-    console.error("Unable to connect to the database:", err);
-  }
-})();
+    // Connect to the MongoDB "hospital" database
+    const mongoUri =
+      process.env.MONGO_URI || "mongodb://localhost:27017/hospital";
+    await mongoose.connect(mongoUri); // ✅ No need for useNewUrlParser or useUnifiedTopology
+    console.log("✅ MongoDB connected to hospital database!");
 
-app.listen(PORT, () => {
-  console.log(`Server running at http://localhost:${PORT}`);
-});
+    // Define the Force schema & model
+    const forceSchema = new mongoose.Schema({
+      visible: { type: Boolean, default: true },
+    });
+
+    // Model name "Force" -> collection "forces"
+    const Force = mongoose.model("Force", forceSchema);
+
+    // Insert a test document if none exist
+    const count = await Force.countDocuments();
+    if (count === 0) {
+      const doc = await Force.create({ visible: true });
+      console.log("📝 Inserted test document:", doc);
+    } else {
+      console.log("📂 Force collection already has documents.");
+    }
+
+    // Start Express server
+    app.listen(config.server.port, () => {
+      console.log(`Server running on http://localhost:${config.server.port}`);
+    });
+  } catch (err) {
+    console.error("❌ Server startup failed:", err);
+    process.exit(1);
+  }
+};
+
+startServer();

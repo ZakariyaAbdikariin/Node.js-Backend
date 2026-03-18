@@ -1,33 +1,25 @@
-// src/services/user.service.ts
 import { UserRepository } from "../repositories/user.repository";
 
 export class UserService {
-  private userRepository: UserRepository;
+  private repo = new UserRepository();
 
-  constructor() {
-    this.userRepository = new UserRepository();
+  getAllUsers() {
+    return this.repo.getAll();
   }
 
-  async getAllUsers() {
-    return this.userRepository.getAllUsers();
+  getUserById(id: string) {
+    return this.repo.getById(id);
   }
 
-  async getUserById(id: number) {
-    return this.userRepository.getUserById(id);
+  createUser(data: { name: string; email: string }) {
+    return this.repo.create(data);
   }
 
-  async createUser(data: { name: string; email: string; age?: number }) {
-    return this.userRepository.createUser(data);
+  updateUser(id: string, data: Partial<{ name: string; email: string }>) {
+    return this.repo.update(id, data);
   }
 
-  async updateUser(
-    id: number,
-    data: { name?: string; email?: string; age?: number },
-  ) {
-    return this.userRepository.updateUser(id, data);
-  }
-
-  async deleteUser(id: number) {
-    return this.userRepository.deleteUser(id);
+  deleteUser(id: string) {
+    return this.repo.delete(id);
   }
 }

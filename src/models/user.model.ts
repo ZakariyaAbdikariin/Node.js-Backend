@@ -1,41 +1,20 @@
 // src/models/user.model.ts
-import { DataTypes, Model } from "sequelize";
-import { sequelize } from "../config/database";
+import mongoose, { Schema, Document } from "mongoose";
 
-export class User extends Model {
-  public id!: number;
-  public name!: string;
-  public email!: string;
-  public age!: number | null;
-
-  public readonly createdAt!: Date;
-  public readonly updatedAt!: Date;
+// ✅ Export interface
+export interface IUser extends Document {
+  name: string;
+  email: string;
 }
 
-User.init(
+// ✅ Define schema
+const userSchema: Schema<IUser> = new Schema(
   {
-    id: {
-      type: DataTypes.INTEGER,
-      autoIncrement: true,
-      primaryKey: true,
-    },
-    name: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
-    email: {
-      type: DataTypes.STRING,
-      allowNull: false,
-      unique: true,
-    },
-    age: {
-      type: DataTypes.INTEGER,
-      allowNull: true,
-    },
+    name: { type: String, required: true },
+    email: { type: String, required: true, unique: true },
   },
-  {
-    sequelize,
-    tableName: "users",
-    timestamps: true,
-  },
+  { timestamps: true },
 );
+
+// ✅ Export model
+export const User = mongoose.model<IUser>("User", userSchema);
