@@ -5,21 +5,16 @@ import { config } from "./config/config";
 
 const startServer = async () => {
   try {
-    // Connect to the MongoDB "hospital" database
-    const mongoUri =
-      process.env.MONGO_URI || "mongodb://localhost:27017/hospital";
-    await mongoose.connect(mongoUri); // ✅ No need for useNewUrlParser or useUnifiedTopology
+    const mongoUri = process.env.MONGO_URI || "mongodb://127.0.0.1:27017/hospital";
+
+    // Connect to MongoDB
+    await mongoose.connect(mongoUri);
     console.log("✅ MongoDB connected to hospital database!");
 
-    // Define the Force schema & model
-    const forceSchema = new mongoose.Schema({
-      visible: { type: Boolean, default: true },
-    });
-
-    // Model name "Force" -> collection "forces"
+    // Optional: Insert a test document into 'forces' collection
+    const forceSchema = new mongoose.Schema({ visible: { type: Boolean, default: true } });
     const Force = mongoose.model("Force", forceSchema);
 
-    // Insert a test document if none exist
     const count = await Force.countDocuments();
     if (count === 0) {
       const doc = await Force.create({ visible: true });
