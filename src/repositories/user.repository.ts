@@ -1,24 +1,27 @@
 import { User, IUser } from "../models/user.model";
 
 export class UserRepository {
-  async getAll(): Promise<IUser[]> {
+  getAll(): Promise<IUser[]> {
     return User.find();
   }
 
-  async getById(id: string): Promise<IUser | null> {
+  getById(id: string): Promise<IUser | null> {
     return User.findById(id);
   }
 
-  async create(data: { name: string; email: string }): Promise<IUser> {
+  create(data: Partial<IUser>, session?: any): Promise<IUser> {
     const user = new User(data);
-    return user.save();
+    return user.save({ session });
   }
 
-  async update(id: string, data: Partial<IUser>): Promise<IUser | null> {
-    return User.findByIdAndUpdate(id, data, { new: true });
+  update(id: string, data: Partial<IUser>, session?: any) {
+    return User.findByIdAndUpdate(id, data, {
+      new: true,
+      session,
+    });
   }
 
-  async delete(id: string): Promise<IUser | null> {
-    return User.findByIdAndDelete(id);
+  delete(id: string, session?: any) {
+    return User.findByIdAndDelete(id, { session });
   }
 }
