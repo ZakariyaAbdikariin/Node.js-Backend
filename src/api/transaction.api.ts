@@ -7,9 +7,12 @@ const router = Router();
 const userService = new UserService();
 const companyService = new CompanyService();
 
-// =========================
-// CREATE (POST)
-// =========================
+/**
+ * @swagger
+ * /transaction:
+ *   post:
+ *     summary: Create user and company in a transaction
+ */
 router.post("/", async (req: Request, res: Response) => {
   const session = await mongoose.startSession();
   session.startTransaction();
@@ -38,31 +41,32 @@ router.post("/", async (req: Request, res: Response) => {
   }
 });
 
-// =========================
-// GET ALL
-// =========================
+/**
+ * @swagger
+ * /transaction:
+ *   get:
+ *     summary: Get all users and companies
+ */
 router.get("/", async (_req: Request, res: Response) => {
   try {
     const users = await userService.getAllUsers();
     const companies = await companyService.getAllCompanies();
 
-    res.json({
-      message: "All Users and Companies",
-      users,
-      companies,
-    });
+    res.json({ users, companies });
   } catch {
     res.status(500).json({ error: "Failed to fetch data" });
   }
 });
 
-// =========================
-// GET USER BY ID
-// =========================
+/**
+ * @swagger
+ * /transaction/user/{id}:
+ *   get:
+ *     summary: Get user by ID
+ */
 router.get("/user/:id", async (req: Request, res: Response) => {
   try {
     const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
-
     const user = await userService.getUserById(id);
 
     if (!user) return res.status(404).json({ error: "User not found" });
@@ -73,13 +77,15 @@ router.get("/user/:id", async (req: Request, res: Response) => {
   }
 });
 
-// =========================
-// GET COMPANY BY ID
-// =========================
+/**
+ * @swagger
+ * /transaction/company/{id}:
+ *   get:
+ *     summary: Get company by ID
+ */
 router.get("/company/:id", async (req: Request, res: Response) => {
   try {
     const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
-
     const company = await companyService.getCompanyById(id);
 
     if (!company) return res.status(404).json({ error: "Company not found" });
@@ -90,9 +96,12 @@ router.get("/company/:id", async (req: Request, res: Response) => {
   }
 });
 
-// =========================
-// UPDATE (PUT)
-// =========================
+/**
+ * @swagger
+ * /transaction/{userId}/{companyId}:
+ *   put:
+ *     summary: Update user and company together
+ */
 router.put("/:userId/:companyId", async (req: Request, res: Response) => {
   const session = await mongoose.startSession();
   session.startTransaction();
@@ -101,7 +110,6 @@ router.put("/:userId/:companyId", async (req: Request, res: Response) => {
     const userId = Array.isArray(req.params.userId)
       ? req.params.userId[0]
       : req.params.userId;
-
     const companyId = Array.isArray(req.params.companyId)
       ? req.params.companyId[0]
       : req.params.companyId;
@@ -109,7 +117,6 @@ router.put("/:userId/:companyId", async (req: Request, res: Response) => {
     const { user, company } = req.body;
 
     const updatedUser = await userService.updateUser(userId, user, session);
-
     const updatedCompany = await companyService.updateCompany(
       companyId,
       company,
@@ -118,26 +125,21 @@ router.put("/:userId/:companyId", async (req: Request, res: Response) => {
 
     await session.commitTransaction();
 
-    res.json({
-      message: "User and Company updated successfully",
-      user: updatedUser,
-      company: updatedCompany,
-    });
+    res.json({ updatedUser, updatedCompany });
   } catch (err: any) {
     await session.abortTransaction();
-
-    res.status(500).json({
-      error: "Update transaction failed",
-      details: err.message,
-    });
+    res.status(500).json({ error: err.message });
   } finally {
     session.endSession();
   }
 });
 
-// =========================
-// DELETE (atomic)
-// =========================
+/**
+ * @swagger
+ * /transaction/{userId}/{companyId}:
+ *   delete:
+ *     summary: Delete user and company together
+ */
 router.delete("/:userId/:companyId", async (req: Request, res: Response) => {
   const session = await mongoose.startSession();
   session.startTransaction();
@@ -146,7 +148,6 @@ router.delete("/:userId/:companyId", async (req: Request, res: Response) => {
     const userId = Array.isArray(req.params.userId)
       ? req.params.userId[0]
       : req.params.userId;
-
     const companyId = Array.isArray(req.params.companyId)
       ? req.params.companyId[0]
       : req.params.companyId;
@@ -159,18 +160,10 @@ router.delete("/:userId/:companyId", async (req: Request, res: Response) => {
 
     await session.commitTransaction();
 
-    res.json({
-      message: "User and Company deleted successfully",
-      user: deletedUser,
-      company: deletedCompany,
-    });
+    res.json({ deletedUser, deletedCompany });
   } catch (err: any) {
     await session.abortTransaction();
-
-    res.status(500).json({
-      error: "Delete transaction failed",
-      details: err.message,
-    });
+    res.status(500).json({ error: err.message });
   } finally {
     session.endSession();
   }

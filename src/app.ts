@@ -1,10 +1,21 @@
 import express from "express";
-import transactionRoutes from "./api/transaction.api";
+import swaggerUi from "swagger-ui-express";
+import { swaggerSpec } from "./config/swagger";
+
+import userApi from "./api/user.api";
+import companyApi from "./api/company.api";
+import transactionApi from "./api/transaction.api";
 
 const app = express();
 
 app.use(express.json());
 
-app.use("/api/transaction", transactionRoutes);
+// Routes
+app.use("/users", userApi);
+app.use("/companies", companyApi);
+app.use("/transaction", transactionApi);
+
+// Swagger
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 export default app;
